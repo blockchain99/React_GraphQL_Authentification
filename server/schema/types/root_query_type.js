@@ -7,7 +7,7 @@ const RootQueryType = new GraphQLObjectType({
   fields: {
     user: {
       type: Usertype,
-//how to return the user, if req obj get som property,
+//how to return the user, if req obj get some property,
 //automatically placed on it, Passport work with req.
 //req obj should have req.user property assigned to it.
 //if user is not currently signed in, req.user is undefined,

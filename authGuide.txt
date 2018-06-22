@@ -1,0 +1,197 @@
+1. sign up/sign in with Emai, Password, Submit Button
+. sign Out
+. show Different pages using React Router for Navigation.
+. Store user data using MongoDB
+
+2.~/graphqlReact/auth$ npm install
+3. Decoupled approach for GraphQL , Passport-recommended.
+4. mlab.com / (te,1)
+5. server.js
+const MONGO_URI = 'mongodb://<dbuser>:<dbpassword>@ds163530.mlab.com:63530/authentificationdb'
+6./schema/types/user_type.js
+7. Mutation(Signup, Logiin, Logout) has min code
+whereas, Helper Func/Object has most code.
+8./schema/types/mutation.js
+9. service/auth.js signup & login function
+-signup func : with email, password, automatically signup new user
+& save them, login the application.
+10. mutation hookup the schema.
+11.~/graphqlReact/auth$ npm install --save-dev nodemon (not globally)
+~/graphqlReact/auth$ npm run dev
+12. wire up mutation to schema
+13. $ npm run dev
+14 localhost:4000/graphql
+----------------
+mutation {
+  signup(email: "test@test.com", password: "password") {
+    email
+  }
+}
+15. passportjs.org/docs
+* logout:
+Invoking logout() will remove the req.user property
+and clear the login session (if any).
+---------------
+mutation {
+  logout {
+    email
+  }
+}
+
+* login:
+-----------
+mutation {
+  login(email: "test@test.com", password: "password") {
+    email
+  }
+}
+16. need to check whether user is logged in to application.
+-> in root_query_type.js, add field, user for current login user.
+--------
+resolve(parentValue, args, req) {
+  return req.user; //if signed-in return it else null.
+}
+--------localhost:4000/graphql----
+1) * login : after execution, signed as test@test.com
+-----------
+mutation {
+  login(email: "test@test.com", password: "password") {
+    email
+  }
+}
+2) * query asking for current user. => get back
+==> "test@test.com"
+{
+  user {
+     email
+  }
+}
+3) *logout current user, so current user not authenticated.
+mutation {
+  logout {
+    email
+  }
+}
+4) * return "null" for current user.
+{
+  user {
+     email
+  }
+}
+16. Header( indicator Sign Up, Sign In) changed
+according to user state.
+17. SignUpForm page, Sign In Page share common feature
+such as Email, Password, Submit. difference is mutation to call
+18.*(yes): user currently signed in,
+            User Loads Header
+                      |
+             Query for Auth state
+                |(yes)      |(no)
+ Show button to logout  Show login buttons
+         |(click)
+  Rerun Query for Auth
+         |
+  Component rerenders
+19. * after mutation { login (email: "..", password: "..") {
+              email } }
+    ------show current sign-in user =>
+{
+  user {
+     id
+     email
+  }
+}
+* in queries/CurrentUser.js, add above code.
+20. *http://localhost:4000/ (GraphiQL side)
+* check chrome devtool/ console ((application side)
+- 1st obj/ fetchMore / loading : true
+- 2nd obj/ fetchMore / loading : false / user: null(not currently
+authenticated)--->
+in GraphiQL, we can see it is authenticated but in app, we can't
+sure authenticated !
+21. GraphiQL after header2.js,
+1)
+http://localhost:4000/ ==> "Logout" shows since sign in the application.
+2)GraphiQL
+ mutation {
+  logout {
+    id
+  }
+}  ===> "logout" user --->
+App.js is parent of LoginForm.js, so App's className="container
+http://localhost:4000/ ==> "You are not signed."
+22. Header.js
+mutation {
+  logout {
+    id
+    email
+  }
+}
+===> add above in onLogoutClick() {..}
+23.
+1) GraphiQL:
+mutation {
+  login(email: "test@test.com", password: "password") {
+    id
+  }
+}
+2) http://localhost:4000/ refresh page: => only "Logout"
+  :chorme/ Network ->  email , id exists.
+--> click Logout : chorme/ Network -> user : null
+24.  LoginFrom  SigninForm
+            |    |
+           Auth Form
+25. https://materializecss.com/ materialize css
+App.js is parent of LoginForm.js, so App's style,
+<div className="container"> affect all child
+26. GraphQL: ==> copy below to /mutations/Login.js
+mutation Login($email: String, $password: String) {
+  login(email: $email, password: $password){
+    id
+    email
+  }
+}
+=== QUERY VARIABLES
+{
+  "email": "test@test.com",
+  "password": "pasword"
+}
+26. in LoginForm, add refetchQueries: [{ query }] in
+onSubmit({email, password}) {...}
+--> click Logout then, Signup, Login shows.
+===> After correct email, pwd input, auto Header update.
+--> Logout shows. /Network/Preview check !
+27. onSubmit({email, password}) {...}.catch(res => { debugger });
+Login with blank input => execution stopped at .."debugger"
+in Chrome/source/.
+In console, type in res ..==>
+Error : GraphQL error: Invalid credentials.
+-res.graphQLErrors[0].message
+-res.graphQLErrors.map(error => error.message)
+28.
+mutation Signup($email: String, $password: String) {
+  signup(email: $email, password: $password) {
+    id
+    email
+  }
+}
+---
+{
+  "email": "test1@test.com",
+  "password": "password"
+}
+===>
+29. if(!this.props.data.user && nextProps.data.user) {
+  hashHistory.push('/dashboard'); } }
+: user(previous not signed in but now yes) ---> push to dsahboard
+then Logout / refresh => still dashboard page. (need to fix!!)
+===> if logout, need to redirect to other site not in dashboard.
+----------------
+1) Anyone can go (LoginForm, SignUpForm)
+2) Only auth'd users can go based on ahtu'd state
+=>( requireAuthHOC(Dashboard) ,
+    requireAuthHOC(Account Settings) ,
+    requireAuthHOC(Profile Page)  )
+    * Higher Order Component: checking current user are auth'd.
+    Component + Higher Order Component = Component with
+    Additional functionality or data => enhance or Composed Component.
